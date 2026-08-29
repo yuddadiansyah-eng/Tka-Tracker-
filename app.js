@@ -1,102 +1,29 @@
-const subjects=[
-{id:"kimia",icon:"🧪",name:"Kimia",desc:"Materi esensial TKA Kimia",groups:[
-["Kimia Dasar",["Struktur atom","Teori dan model atom","Sistem periodik unsur","Sifat periodik unsur","Ikatan kimia","Geometri molekul","Interaksi antarmolekul","Hukum dasar kimia","Stoikiometri","Persamaan reaksi kimia"]],
-["Kimia Analitik",["Larutan","Kesetimbangan larutan","Asam-basa","pH","Koloid"]],
-["Kimia Fisik",["Energetika reaksi","Dinamika reaksi"]],
-["Kimia Organik",["Struktur senyawa karbon","Kereaktifan senyawa karbon"]]]},
-{id:"matematika",icon:"📐",name:"Matematika",desc:"Materi dari Matriks Asesmen",groups:[
-["Aljabar — Matriks",["Determinan matriks","Invers matriks","Operasi matriks"]],
-["Aljabar — Polinomial",["Operasi polinomial","Pemfaktoran polinomial","Suku sisa"]],
-["Aljabar — Fungsi",["Domain dan kodomain","Daerah hasil (range)","Grafik fungsi polinom","Fungsi rasional","Fungsi eksponensial","Fungsi logaritma","Fungsi trigonometri"]],
-["Geometri dan Pengukuran — Vektor",["Vektor pada bidang dan ruang","Panjang vektor","Operasi vektor"]],
-["Geometri dan Pengukuran — Lingkaran",["Persamaan lingkaran","Garis singgung lingkaran","Luas dan keliling daerah lingkaran"]],
-["Geometri dan Pengukuran — Transformasi Geometri",["Translasi","Refleksi","Rotasi","Dilatasi","Komposisi transformasi","Transformasi geometri dengan matriks"]],
-["Trigonometri — Limit",["Limit fungsi aljabar","Limit fungsi trigonometri"]]]},
-{id:"bahasa",icon:"📖",name:"Bahasa Indonesia",desc:"Materi dari Matriks Asesmen",groups:[
-["Pemahaman Tekstual",["Mengidentifikasi informasi penting dalam teks","Mengklasifikasi orang, benda, tempat, atau peristiwa berdasarkan kategori tertentu","Membuat kerangka atau bagan berdasarkan bagian-bagian penting dalam teks","Meringkas teks dengan mengutip bagian penting","Mengidentifikasi kata serapan dari bahasa daerah/asing","Mengidentifikasi latar, karakter, dan/atau fenomena berdasarkan kosakata dalam teks fiksi atau nonfiksi"]],
-["Pemahaman Inferensial",["Menyimpulkan detail pendukung","Menyimpulkan topik, ide pokok/gagasan utama, makna, target pembaca, tujuan penulisan, dan alasan moral","Menyimpulkan urutan kejadian dan memperkirakan isi selanjutnya dari teks","Menyimpulkan persamaan atau perbedaan antartokoh, waktu, tempat, dan/atau gagasan","Menyimpulkan hubungan sebab-akibat","Menyimpulkan karakter tokoh berdasarkan petunjuk eksplisit dalam teks","Memprediksi hasil cerita setelah membaca bagian awal"]],
-["Evaluasi dan Apresiasi",["Menilai realitas atau fantasi dalam teks","Menilai fakta atau opini","Menilai kecukupan dan validitas informasi","Menilai kesesuaian bagian teks untuk menggambarkan karakter utama atau aspek lain","Menanggapi teks secara emosional dan estetis","Menilai relevansi peristiwa dalam teks dengan kehidupan sehari-hari","Menilai ketepatan dan kesesuaian penggunaan bahasa","Menyimpulkan respons emosional terhadap unsur puisi, prosa, dan drama"]]]}
-];
-
-const KEY="tka-tracker-pro-v1";
-let state=JSON.parse(localStorage.getItem(KEY)||'{"done":{},"schedule":[],"target":{"score":0,"date":"","subjects":{"kimia":false,"matematika":false,"bahasa":false}}}');
-if(!state.done)state.done={}; if(!state.schedule)state.schedule=[]; if(!state.target)state.target={score:0,date:"",subjects:{}};
-let page="dashboard", filter="all", query="";
-
-const items=()=>subjects.flatMap(s=>s.groups.flatMap(g=>g[1].map(name=>({id:`${s.id}|${g[0]}|${name}`,subject:s.id,name}))));
-const total=items().length;
-const doneCount=()=>items().filter(x=>state.done[x.id]).length;
-const pct=()=>Math.round(doneCount()/total*100);
-const save=()=>localStorage.setItem(KEY,JSON.stringify(state));
-const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]));
-function toast(t){let e=document.getElementById("toast");e.textContent=t;e.classList.add("show");clearTimeout(window._t);window._t=setTimeout(()=>e.classList.remove("show"),1800)}
-function subjectPct(id){let a=items().filter(x=>x.subject===id),d=a.filter(x=>state.done[x.id]).length;return Math.round(d/a.length*100)}
-function pageTitle(title,sub){return `<div class="page-title"><div><h1>${title}</h1><p>${sub}</p></div></div>`}
-
-function dashboard(){
-return pageTitle("Dashboard","Pantau perjalanan belajarmu dalam satu halaman.")+
-`<section class="hero"><div><span class="label">PROGRES KESELURUHAN</span><h2>${pct()===100?"Semua materi selesai! 🎉":pct()>0?"Teruskan progresmu hari ini.":"Mulai perjalanan TKA-mu."}</h2><p>${doneCount()} dari ${total} materi sudah ditandai selesai.</p></div><div class="ring">${pct()}%</div></section>
-<div class="grid three"><div class="card stat"><div><span class="muted">Materi selesai</span><strong>${doneCount()}</strong></div></div><div class="card stat"><div><span class="muted">Materi tersisa</span><strong>${total-doneCount()}</strong></div></div><div class="card stat"><div><span class="muted">Target nilai</span><strong>${state.target.score||"—"}</strong></div></div></div>
-<div class="grid"><div class="card"><h3>Progres per mata pelajaran</h3>${subjects.map(s=>`<div class="subject-row"><div class="line"><span>${s.icon} ${s.name}</span><span>${subjectPct(s.id)}%</span></div><div class="bar"><div class="fill" style="width:${subjectPct(s.id)}%"></div></div></div>`).join("")}</div>
-<div class="card"><h3>Akses cepat</h3><div class="quick"><button data-go="checklist">✓ Checklist</button><button class="secondary" data-go="schedule">▣ Jadwal</button><button class="secondary" data-go="stats">◔ Statistik</button><button class="secondary" data-go="target">★ Target</button></div></div></div>
-<div class="grid"><div class="card"><h3>Jadwal terdekat</h3>${schedulePreview()}</div><div class="card"><h3>Target TKA</h3><p class="muted">Target nilai: <b>${state.target.score||"Belum diatur"}</b></p><p class="muted">Tanggal target: <b>${state.target.date||"Belum diatur"}</b></p></div></div>`;
-}
-function schedulePreview(){
-if(!state.schedule.length)return `<div class="empty">Belum ada jadwal. Tambahkan jadwal belajarmu.</div>`;
-return `<div class="schedule-list">${state.schedule.slice().sort((a,b)=>a.date.localeCompare(b.date)).slice(0,3).map(s=>`<div class="schedule-item"><div class="datebox"><small>${s.date}</small>${s.time||"—"}</div><div class="schedule-info"><b>${esc(s.title)}</b><span>${esc(s.subject)}${s.note?" · "+esc(s.note):""}</span></div></div>`).join("")}</div>`;
-}
-
-function checklist(){
-let q=query.toLowerCase();
-return pageTitle("Checklist","Centang materi setelah kamu benar-benar mempelajarinya.")+
-`<div class="toolbar"><input id="search" value="${esc(query)}" placeholder="Cari materi..."><button class="primary" id="clearSearch">Bersihkan</button></div>
-<div class="tabs"><button class="tab ${filter==="all"?"active":""}" data-filter="all">Semua</button>${subjects.map(s=>`<button class="tab ${filter===s.id?"active":""}" data-filter="${s.id}">${s.icon} ${s.name}</button>`).join("")}</div>
-${subjects.filter(s=>filter==="all"||filter===s.id).map(s=>{
-let groups=s.groups.map(([g,arr])=>{let v=arr.filter(n=>!q||n.toLowerCase().includes(q));if(!v.length)return "";return `<div class="group"><h4>${g}</h4>${v.map(n=>{let id=`${s.id}|${g}|${n}`,d=!!state.done[id];return `<div class="item ${d?"done":""}"><input type="checkbox" data-id="${esc(id)}" ${d?"checked":""}><label>${esc(n)}</label></div>`}).join("")}</div>`}).join("");
-return `<article class="subject"><div class="subject-head"><div class="subject-name"><div class="subject-icon">${s.icon}</div><div><h3>${s.name}</h3><small>${s.desc}</small></div></div><div class="pct">${subjectPct(s.id)}%</div></div>${groups}</article>`}).join("")}`;
-}
-
-function schedule(){
-return pageTitle("Jadwal Belajar","Buat agenda belajar yang realistis dan mudah diikuti.")+
-`<div class="grid"><div class="card"><h3>Tambah jadwal</h3><form class="form" id="scheduleForm"><div class="form-grid"><div><label>Tanggal</label><input name="date" type="date" required></div><div><label>Waktu</label><input name="time" type="time"></div></div><div><label>Materi / kegiatan</label><input name="title" placeholder="Contoh: Latihan Stoikiometri" required></div><div><label>Mata pelajaran</label><select name="subject"><option>Kimia</option><option>Matematika</option><option>Bahasa Indonesia</option></select></div><div><label>Catatan</label><textarea name="note" placeholder="Target sesi belajar..."></textarea></div><button class="primary">＋ Tambah Jadwal</button></form></div>
-<div class="card"><h3>Tips menyusun jadwal</h3><p class="muted">• Tentukan satu tujuan jelas per sesi.</p><p class="muted">• Sisakan waktu untuk latihan soal dan review.</p><p class="muted">• Jangan membuat jadwal terlalu padat.</p></div></div>
-<div class="card" style="margin-top:16px"><h3>Semua jadwal</h3>${state.schedule.length?`<div class="schedule-list">${state.schedule.slice().sort((a,b)=>a.date.localeCompare(b.date)||a.time.localeCompare(b.time)).map((s,i)=>`<div class="schedule-item"><div class="datebox"><small>${s.date}</small>${s.time||"—"}</div><div class="schedule-info"><b>${esc(s.title)}</b><span>${esc(s.subject)}${s.note?" · "+esc(s.note):""}</span></div><div class="schedule-actions"><button data-del="${s.id}">✕</button></div></div>`).join("")}</div>`:`<div class="empty">Belum ada jadwal belajar.</div>`}</div>`;
-}
-
-function stats(){
-let finished=doneCount(), p=pct();
-return pageTitle("Statistik","Lihat perkembangan penguasaan materi TKA.")+
-`<div class="grid three"><div class="card stat"><div><span class="muted">Keseluruhan</span><strong>${p}%</strong></div></div><div class="card stat"><div><span class="muted">Selesai</span><strong>${finished}</strong></div></div><div class="card stat"><div><span class="muted">Belum selesai</span><strong>${total-finished}</strong></div></div></div>
-<div class="card" style="margin-top:16px"><h3>Rincian per mata pelajaran</h3>${subjects.map(s=>`<div class="subject-row"><div class="line"><span>${s.icon} ${s.name}</span><span>${subjectPct(s.id)}%</span></div><div class="bar"><div class="fill" style="width:${subjectPct(s.id)}%"></div></div></div>`).join("")}</div>
-<div class="card" style="margin-top:16px"><h3>Ringkasan</h3><p class="muted">Kamu sudah menyelesaikan <b>${finished}</b> dari <b>${total}</b> materi. ${p>=75?"Pertahankan konsistensimu.":p>=40?"Progresmu sudah berjalan bagus.":"Fokus dulu menyelesaikan beberapa materi inti setiap sesi."}</p></div>`;
-}
-
-function target(){
-return pageTitle("Target TKA","Tetapkan sasaran agar proses belajarmu punya arah.")+
-`<div class="grid"><div class="card"><h3>Target utama</h3><form class="form" id="targetForm"><div><label>Target nilai TKA</label><input name="score" type="number" min="0" max="1000" value="${state.target.score||""}" placeholder="Contoh: 700"></div><div><label>Tanggal target</label><input name="date" type="date" value="${state.target.date||""}"></div><button class="primary">Simpan Target</button></form></div>
-<div class="card target-card"><div><span class="muted">Target nilai</span><div class="target-score">${state.target.score||"—"}</div><span class="muted">Tanggal: ${state.target.date||"Belum diatur"}</span></div><div class="ring">${pct()}%</div></div></div>
-<div class="card" style="margin-top:16px"><h3>Prioritas mata pelajaran</h3><p class="muted">Tandai mata pelajaran yang ingin kamu jadikan fokus utama.</p>${subjects.map(s=>`<label class="subject-check"><input type="checkbox" data-target="${s.id}" ${state.target.subjects?.[s.id]?"checked":""}> ${s.icon} ${s.name}</label>`).join("")}</div>`;
-}
-
-function render(){
-let html=page==="dashboard"?dashboard():page==="checklist"?checklist():page==="schedule"?schedule():page==="stats"?stats():target();
-document.getElementById("content").innerHTML=html;
-bind();
-document.querySelectorAll(".nav").forEach(n=>n.classList.toggle("active",n.dataset.page===page));
-}
-function bind(){
-document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{page=b.dataset.go;render();scrollTo(0,0)});
-document.querySelectorAll(".nav").forEach(n=>n.onclick=()=>{page=n.dataset.page;render();document.getElementById("sidebar").classList.remove("open");scrollTo(0,0)});
-document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{filter=b.dataset.filter;render()});
-let search=document.getElementById("search"); if(search){search.oninput=e=>{query=e.target.value;render();let s=document.getElementById("search");s.focus();s.setSelectionRange(s.value.length,s.value.length)};document.getElementById("clearSearch").onclick=()=>{query="";render()}}
-document.querySelectorAll('input[type="checkbox"][data-id]').forEach(c=>c.onchange=()=>{state.done[c.dataset.id]=c.checked;save();render();toast(c.checked?"Materi selesai ✓":"Checklist dibatalkan")});
-let sf=document.getElementById("scheduleForm");if(sf)sf.onsubmit=e=>{e.preventDefault();let f=new FormData(sf);state.schedule.push({id:Date.now(),date:f.get("date"),time:f.get("time"),title:f.get("title"),subject:f.get("subject"),note:f.get("note")});save();render();toast("Jadwal ditambahkan ✓")};
-document.querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>{state.schedule=state.schedule.filter(x=>String(x.id)!==String(b.dataset.del));save();render();toast("Jadwal dihapus")});
-let tf=document.getElementById("targetForm");if(tf)tf.onsubmit=e=>{e.preventDefault();let f=new FormData(tf);state.target.score=f.get("score");state.target.date=f.get("date");save();render();toast("Target tersimpan ✓")};
-document.querySelectorAll("[data-target]").forEach(c=>c.onchange=()=>{state.target.subjects=state.target.subjects||{};state.target.subjects[c.dataset.target]=c.checked;save();toast("Prioritas diperbarui")});
-}
-document.getElementById("menuBtn").onclick=()=>document.getElementById("sidebar").classList.toggle("open");
-let deferred;window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferred=e;document.getElementById("installBtn").classList.remove("hidden")});
-document.getElementById("installBtn").onclick=async()=>{if(deferred){deferred.prompt();await deferred.userChoice;deferred=null;document.getElementById("installBtn").classList.add("hidden")}};
-if("serviceWorker" in navigator)window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js"));
-render();
+const data={
+"Kimia":[["Kimia Dasar",["Struktur Atom & Teori Model Atom","Sistem & Sifat Periodik Unsur","Ikatan Kimia, Geometri Molekul & Interaksi Antarmolekul","Hukum Dasar Kimia, Stoikiometri & Persamaan Reaksi"]],["Kimia Analitik",["Larutan & Kesetimbangan Larutan","Asam-Basa & Pengukuran pH","Sistem Koloid"]],["Kimia Fisik",["Energetika Reaksi / Termokimia","Dinamika Reaksi / Laju Reaksi & Kesetimbangan"]],["Kimia Organik",["Struktur & Kereaktifan Senyawa Karbon / Hidrokarbon"]]],
+"Matematika Dasar":[["Bilangan Real",["Jenis & sifat bilangan","Operasi dasar","Eksponen bulat","Eksponen pecahan"]],["Aljabar",["Sistem persamaan linear multivariabel","Sistem pertidaksamaan linear multivariabel","Program linear","Fungsi linear","Fungsi kuadrat","Fungsi rasional","Fungsi invers","Fungsi komposisi"]],["Barisan & Deret",["Aritmetika","Geometri","Bunga","Pertumbuhan","Peluruhan"]],["Geometri & Pengukuran",["Garis, sudut & bidang","Kesebangunan","Kongruensi","Pythagoras","Translasi","Refleksi","Rotasi","Dilatasi","Keliling","Luas","Volume"]],["Trigonometri",["sin","cos","tan","csc","sec","cot"]],["Data & Peluang",["Tabel","Grafik","Diagram","Mean, median, modus","Ukuran penyebaran","Peluang"]]],
+"Matematika Lanjut":[["Aljabar",["Matriks","Determinan 2×2","Determinan 3×3","Invers matriks","Operasi matriks","Polinomial","Pemfaktoran","Suku sisa","Polinomial orde ≤4"]],["Fungsi Lanjut",["Polinom","Rasional","Akar","Eksponen","Logaritma","Nilai mutlak","Trigonometri"]],["Geometri & Pengukuran",["Vektor bidang","Vektor ruang","Panjang vektor","Operasi vektor","Lingkaran","Persamaan lingkaran","Garis singgung","Luas & keliling lingkaran","Transformasi dengan matriks"]],["Trigonometri & Kalkulus",["Limit fungsi aljabar","Limit fungsi trigonometri","Limit tanpa L'Hôpital"]]],
+"Bahasa Indonesia":[["Pemahaman Tekstual",["Kata serapan","Latar","Karakter","Kosakata","Bagan teks","Kerangka teks"]],["Pemahaman Inferensial",["Ide pokok","Gagasan pendukung","Hubungan antarkalimat","Hubungan antarparagraf","Prediksi kelanjutan cerita"]],["Evaluasi & Apresiasi",["Relevansi teks","Keakuratan data","Keakuratan bahasa","Evaluasi karakter","Puisi","Prosa","Drama","Respons emosional"]]],
+"Bahasa Inggris":[["Textual Understanding",["Explicit information","Classifying","Outlining","Summarizing","Synthesizing sources"]],["Inferential Understanding",["Main idea","Topic","Purpose","Moral value","Cause & effect","Sequence of events","Character traits","Predicting outcomes"]],["Evaluation & Appreciation",["Reality vs fantasy","Fact vs opinion","Validity","Accuracy","Emotional response","Personal response"]]]
+};
+let state=JSON.parse(localStorage.tkaMaster||'{"done":[],"target":750,"study":0,"streak":7,"score":682,"theme":"light"}');
+const key=x=>btoa(unescape(encodeURIComponent(x))).replaceAll('=','');
+const all=()=>Object.values(data).flat().flatMap(x=>x[1]).length;
+const doneCount=()=>state.done.length;
+function save(){localStorage.tkaMaster=JSON.stringify(state)}
+function go(page){document.querySelectorAll('.bottom-nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===page));({home:home,materi:materi,jadwal:jadwal,stats:stats,target:target}[page]||home)()}
+function home(){content.innerHTML=`<section class="hero"><div class="hero-row"><div><div class="muted" style="color:#ffffffb8">TARGET TKA</div><div class="score">${state.score}</div><div>Target ${state.target} · +34 minggu ini</div></div><div class="ring"><div>${Math.round(doneCount()/all()*100)}%</div></div></div><div style="margin:18px 0 6px;display:flex;justify-content:space-between"><span>Progress materi</span><b>${doneCount()}/${all()}</b></div><div class="progress"><i style="width:${doneCount()/all()*100}%"></i></div></section>
+<div class="section-title"><h2>Ringkasan</h2></div><div class="grid"><div class="card metric">🔥 <b>${state.streak}</b><div class="muted">hari streak</div></div><div class="card metric">⏱️ <b>${state.study}j</b><div class="muted">belajar</div></div></div>
+<div class="section-title"><h2>Belajar Hari Ini</h2><span class="tag">3 sesi</span></div>
+${[['🧪','Kimia','Asam-Basa & Pengukuran pH','45 menit'],['📐','Matematika','Fungsi Kuadrat','30 menit'],['🇬🇧','English','Main Idea & Topic','30 menit']].map(x=>`<div class="card" style="margin-bottom:10px"><div style="font-size:11px;font-weight:800;color:#777b91">${x[0]} ${x[1]}</div><b>${x[2]}</b><div class="muted">${x[3]}</div><button class="btn secondary" style="margin-top:10px" onclick="quiz('${x[2]}')">Mulai Belajar →</button></div>`).join('')}`; }
+function materi(){content.innerHTML=`<div class="section-title"><h2>Checklist Materi</h2><span class="badge">${doneCount()} / ${all()}</span></div>${Object.entries(data).map(([sub,groups])=>`<div class="subject"><div class="subject-head"><div><b>${sub}</b><div class="muted">${groups.reduce((a,g)=>a+g[1].length,0)} materi</div></div><span>›</span></div><div class="subject-body">${groups.map(g=>`<div class="group"><div class="group-title">${g[0]}</div>${g[1].map(m=>`<label class="check"><input type="checkbox" ${state.done.includes(m)?'checked':''} onchange="toggleDone(this,'${esc(m)}')"><span>${m}</span></label>`).join('')}</div>`).join('')}</div></div>`).join('')}`}
+function jadwal(){content.innerHTML=`<div class="section-title"><h2>Jadwal Belajar</h2><button class="btn" onclick="addSession()">+ Sesi</button></div><div class="card" style="margin-bottom:15px"><b>Sabtu, 29 Agustus</b><div class="muted">Target hari ini: 1 jam 45 menit</div></div>${[['16:00','Kimia','Asam-Basa'],['17:00','Matematika','Fungsi Kuadrat'],['19:30','English','Main Idea & Topic'],['20:15','Mixed Quiz','20 Questions']].map((x,i)=>`<div class="schedule"><div class="time">${x[0]}</div><div class="dot"></div><div style="flex:1"><b>${x[1]}</b><div class="muted">${x[2]}</div></div><span>${i===0?'✓':'○'}</span></div>`).join('')}`;}
+function stats(){let p=Math.round(doneCount()/all()*100);content.innerHTML=`<div class="section-title"><h2>Statistik Belajar</h2></div><div class="hero"><div class="muted" style="color:#ffffffb8">SKOR SIMULASI</div><div class="score">${state.score}</div><div>↑ +34 dari simulasi sebelumnya</div></div><div class="section-title"><h2>Akurasi per bidang</h2></div>${[['Matematika',76],['Kimia',68],['Bahasa Indonesia',82],['Bahasa Inggris',74]].map(x=>`<div class="card" style="margin-bottom:10px"><div class="kpi"><b>${x[0]}</b><b>${x[1]}%</b></div><div class="bar"><i style="width:${x[1]}%"></i></div></div>`).join('')}<div class="section-title"><h2>Analisis</h2></div><div class="grid"><div class="card"><span class="tag">TERKUAT</span><p>Ide Pokok</p><b>91%</b></div><div class="card"><span class="tag">PERLU LATIHAN</span><p>Stoikiometri</p><b>51%</b></div></div>`}
+function target(){content.innerHTML=`<div class="section-title"><h2>Target TKA</h2></div><div class="card"><div class="muted">TARGET SKOR</div><div class="score" style="color:#6d5dfc">${state.target}</div><div class="muted">Skor saat ini ${state.score}</div><div class="bar" style="margin:15px 0"><i style="width:${Math.min(100,state.score/state.target*100)}%"></i></div><button class="btn" onclick="setTarget()">Ubah Target</button></div><div class="section-title"><h2>Target Mingguan</h2></div><div class="grid">${[['🎯','12','materi selesai'],['📝','150','soal'],['⏱️','7 jam','belajar'],['🔥','7','hari streak']].map(x=>`<div class="card metric">${x[0]} <b>${x[1]}</b><div class="muted">${x[2]}</div></div>`).join('')}</div><div class="section-title"><h2>Achievement</h2></div><div class="card">🏅 First Step &nbsp; 🔥 7 Day Streak &nbsp; 🎯 Target 750</div>`}
+function toggleDone(el,m){if(el.checked&&!state.done.includes(m))state.done.push(m);else state.done=state.done.filter(x=>x!==m);save();materi()}
+function setTarget(){let n=prompt('Target skor TKA:',state.target);if(n&&+n>0){state.target=+n;save();target()}}
+function addSession(){let x=prompt('Nama sesi belajar:');if(x){alert('Sesi “'+x+'” ditambahkan.');}}
+function quiz(topic){let modal=document.createElement('div');modal.className='modal';modal.innerHTML=`<div class="modal-box"><div class="section-title"><h2>Latihan · ${topic}</h2><button class="icon-btn" onclick="this.closest('.modal').remove()">×</button></div><div class="q">Jika kamu sudah mempelajari materi ini, langkah terbaik untuk menguji penguasaan adalah…</div><button class="option" onclick="answer(this,false)">A. Membaca ulang tanpa latihan</button><button class="option" onclick="answer(this,true)">B. Mengerjakan soal lalu meninjau pembahasan</button><button class="option" onclick="answer(this,false)">C. Menghafalkan semua halaman</button><div id="feedback" class="muted" style="margin-top:12px"></div></div>`;document.body.appendChild(modal)}
+function answer(el,ok){document.querySelectorAll('.option').forEach(x=>x.disabled=true);el.classList.add(ok?'correct':'');document.getElementById('feedback').innerHTML=ok?'✓ Benar! Review pembahasan setelah latihan membantu menemukan kelemahan.':'Belum tepat. Coba pilih strategi belajar yang melibatkan latihan dan evaluasi.'}
+function esc(s){return s.replaceAll("'","\\'")}
+function toggleTheme(){state.theme=state.theme==='dark'?'light':'dark';document.body.classList.toggle('dark',state.theme==='dark');save()}
+document.body.classList.toggle('dark',state.theme==='dark');go('home');

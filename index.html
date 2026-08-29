@@ -1,39 +1,21 @@
 <!doctype html>
 <html lang="id">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#173f8f">
-<meta name="description" content="TKA Tracker — Dashboard, Checklist, Jadwal Belajar, Statistik, dan Target TKA.">
-<link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" href="icon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="style.css">
-<title>TKA Tracker</title>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#6d5dfc"><title>TKA Master</title>
+<link rel="manifest" href="manifest.json"><link rel="stylesheet" href="style.css">
 </head>
 <body>
 <div id="app">
-<header class="topbar">
-  <button class="menu-btn" id="menuBtn" aria-label="Buka menu">☰</button>
-  <div class="brand"><div class="logo">T</div><div><b>TKA Tracker</b><small>Study companion</small></div></div>
-  <button class="install hidden" id="installBtn">＋ Install</button>
-</header>
-
-<div class="layout">
-<aside class="sidebar" id="sidebar">
-  <nav>
-    <button class="nav active" data-page="dashboard">⌂ <span>Dashboard</span></button>
-    <button class="nav" data-page="checklist">✓ <span>Checklist</span></button>
-    <button class="nav" data-page="schedule">▣ <span>Jadwal Belajar</span></button>
-    <button class="nav" data-page="stats">◔ <span>Statistik</span></button>
-    <button class="nav" data-page="target">★ <span>Target TKA</span></button>
-  </nav>
-  <div class="side-note"><b>Tips</b><p>Belajar konsisten sedikit demi sedikit lebih baik daripada menumpuk semuanya di akhir.</p></div>
-</aside>
-
+<header class="topbar"><div><div class="eyebrow">TKA MASTER</div><h1 id="greeting">Halo 👋</h1></div><button class="icon-btn" onclick="toggleTheme()">◐</button></header>
 <main id="content"></main>
+<nav class="bottom-nav">
+<button data-page="home" onclick="go('home')">⌂<span>Home</span></button>
+<button data-page="materi" onclick="go('materi')">✓<span>Materi</span></button>
+<button data-page="jadwal" onclick="go('jadwal')">▣<span>Jadwal</span></button>
+<button data-page="stats" onclick="go('stats')">↗<span>Stats</span></button>
+<button data-page="target" onclick="go('target')">◎<span>Target</span></button>
+</nav>
 </div>
-</div>
-<div class="toast" id="toast"></div>
 <script src="app.js"></script>
-</body>
-</html>
+</body></html>
